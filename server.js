@@ -6,10 +6,9 @@ const cors = require("cors");
 const multer = require("multer");
 const pusher = require("pusher");
 const Grid = require("gridfs-stream");
+
 const mongoose = require("mongoose");
 const GridFsStorage = require("multer-gridfs-storage");
-const { rejects } = require("assert");
-const { resolve } = require("path");
 const mongoURI = require("./config/keys").mongoURI;
 
 Grid.mongo = mongoose.mongo;
@@ -52,7 +51,9 @@ const storage = new GridFsStorage({
   file: (req, file) => {
     return new Promise((resolve, reject) => {
       {
-        const filename = `image${Date.now()}${path.extname(file.originalname)}`;
+        const filename = `image-${Date.now()}${path.extname(
+          file.originalname
+        )}`;
         const fileinfo = {
           filename: filename,
           bucketName: "images",
@@ -71,5 +72,19 @@ app.post("/upload/image", upload.single("file"), (req, res) => {
   res.status(201).send(req.file);
 });
 
+app.get("/retrieve/image/single", (req, res) => {
+  gfs.files.findOne({ filename: req.query.name }, (err, file) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      if (!file || file.length === 0) {
+        res.status(404).json({ err: "File Not Found" });
+      } else {
+        const readstream = gfs.createReadStream(file.filename);
+        readstream.pipe(res);
+      }
+    }
+  });
+});
 // Listen
 app.listen(port, () => console.log(`App is running on port ${port}`));
