@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const postModel = mongoose.Schema({
   user: String,
   imgName: String,
@@ -8,4 +7,4 @@ const postModel = mongoose.Schema({
   timestamp: String,
 });
 
-export default mongoose.model("posts", postModel);
+module.exports = Post = mongoose.model("posts", postModel);
